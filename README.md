@@ -2,6 +2,11 @@
 
 A Docker image for use with [Docker Sandbox](https://docs.docker.com/ai/sandboxes), extending the official `docker/sandbox-templates:claude-code` base image with PowerShell and the .NET SDK.
 
+Note: for any non-trivial Dotnet application, the local sandbox startup will need to allow some network access so that NuGet packages can be installed / restored.
+
+> [!WARNING]
+> While this gives Claude Code access to build tools, is it a step too far, partially undoing the advantages of having a sandbox?
+
 ## What's included
 
 - **Base**: [`docker/sandbox-templates:claude-code`](https://hub.docker.com/r/docker/sandbox-templates) (pinned by digest)
