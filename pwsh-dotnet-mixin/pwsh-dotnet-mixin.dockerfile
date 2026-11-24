@@ -55,3 +55,9 @@ RUN set -eu; \
 # (ICU, OpenSSL, libstdc++, zlib, Kerberos), which the sandbox templates do.
 FROM scratch
 COPY --from=build /out/ /
+
+# A mixin's image ENV merges into the workload. Opt out of .NET CLI telemetry and the
+# first-run banner; PowerShell telemetry is likewise disabled.
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    DOTNET_NOLOGO=1 \
+    POWERSHELL_TELEMETRY_OPTOUT=1

@@ -15,7 +15,7 @@
   - Verify: Compare against the upstream example; YAML parses (`python -c 'import yaml...'` or `yq`).
   - Files: `pwsh-dotnet-mixin/pwsh-dotnet-mixin.yaml`
 
-- [ ] Task 4: In-sandbox verification
+- [x] Task 4: In-sandbox verification
   - Acceptance: Binaries run in an `ubuntu:26.04` container with the mixin files overlaid: `pwsh --version` = 7.6.5, `dotnet --version` = 10.0.x, `dotnet new console` + `dotnet build` works given network access.
   - Verify: Command output pasted into the report; any missing lib listed.
   - Files: none (a scratch test script in the scratchpad)
@@ -26,7 +26,7 @@
   - Files: none (optionally a section in README)
 
 - [ ] Task 6: Rewrite the README
-  - Acceptance: Documents the mixin, requirements (v3 workload, minimum `sbx` version), local and published usage, NuGet note, version args, licensing, the retained warning; no stale references to removed images.
+  - Acceptance: Documents the mixin, requirements (v3 workload, minimum `sbx` version), local and published usage, NuGet note, version args, licensing, the retained warning; no stale references to removed images; documents the accepted workload warning and the telemetry opt-out (see SPEC.md Known Limitations).
   - Verify: Markdown lint passes if configured; every command in the README was run or is copied from verified steps.
   - Files: `README.md`
 

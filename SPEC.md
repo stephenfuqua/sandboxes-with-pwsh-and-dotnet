@@ -149,6 +149,22 @@ installed** in the agent sandbox, so verification is split in two.
 - Never: commit credentials or registry tokens; push to Docker Hub without
   confirmation; widen network policy to wildcards for convenience.
 
+## Known Limitations
+
+- **Workload warning (accepted, documented):** the first `dotnet` command per
+  fresh home directory prints `An issue was encountered verifying workloads.`
+  `/opt/dotnet` is root-owned and read-only for the `agent` user, so the SDK
+  cannot create `/opt/dotnet/metadata`. It does not affect restore, build or
+  run. `dotnet workload install` will fail for the same reason. Decision: leave
+  as is rather than make a directory world-writable. A possible future fix is
+  `mkdir -m 0777 /out/opt/dotnet/metadata` in the build stage.
+- Telemetry is opted out via image `ENV` (`DOTNET_CLI_TELEMETRY_OPTOUT`,
+  `DOTNET_NOLOGO`, `POWERSHELL_TELEMETRY_OPTOUT`).
+- Requires a workload that provides ICU, OpenSSL, libstdc++, zlib and Kerberos
+  libraries (the `claude-code` and `copilot` templates do).
+- Each build pulls the latest SDK of the channel, so builds are not
+  reproducible across SDK releases.
+
 ## Success Criteria
 
 1. `sbx run shell --kit ./pwsh-dotnet-mixin` yields a shell where
