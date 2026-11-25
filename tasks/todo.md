@@ -20,7 +20,7 @@
   - Verify: Command output pasted into the report; any missing lib listed.
   - Files: none (a scratch test script in the scratchpad)
 
-- [ ] Task 5: Host verification handoff (blocks cleanup)
+- [x] Task 5: Host verification handoff (blocks cleanup)
   - Acceptance: A concise checklist of `sbx` commands is given to the user for `shell`, `claude`, `copilot`, restore, and negative test; results received.
   - Verify: User reports pass/fail; fixes iterated until all pass.
   - Files: none (optionally a section in README)

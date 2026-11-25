@@ -18,7 +18,7 @@ Order: spike → Dockerfile → descriptor → in-sandbox verification → host 
 
 | Risk | Mitigation |
 | --- | --- |
-| Workload (Ubuntu 26.04) lacks native libs (ICU, OpenSSL, libstdc++, zlib) | Task 1 spike with `ldd` in an `ubuntu:26.04` container. If missing, ask before bundling libs or changing approach. |
+| Workload lacks native libs (ICU, OpenSSL, libstdc++, zlib) | Task 1 spike with `ldd`. **Outcome (host verification):** the `claude` workload is Debian 13 (Docker Hardened Images), not Ubuntu 26.04, and has everything except ICU. The mixin now bundles `libicuuc`, `libicui18n` and `libicudata` from Debian trixie's `libicu76`; the workload still supplies OpenSSL, libstdc++, zlib and Kerberos. |
 | Firewall blocks download hosts in the agent sandbox | Try early (Task 1). If blocked, request allow via the user, or hand build to host. |
 | Descriptor syntax (`provides`, `args`) unverified | Fetch the upstream Claude mixin example before writing the YAML (Task 3). |
 | Symlinks across `scratch` copy break `PATH` lookup | Create the symlinks in the build stage; check with `docker export \| tar -t`. |

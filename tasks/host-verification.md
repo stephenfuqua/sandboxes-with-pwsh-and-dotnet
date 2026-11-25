@@ -22,7 +22,8 @@ env | grep -E 'DOTNET_|POWERSHELL_'                                # expect the 
 ```
 
 Expected: a one-time "verifying workloads" message on first `dotnet` use is a known, accepted limitation.
-Note anything else, especially a missing-library error on `shell` (ICU, OpenSSL, libstdc++).
+Note anything else, especially a missing-library error (OpenSSL, libstdc++, zlib, Kerberos). ICU is bundled
+in the mixin, so an ICU error means the bundled libraries were not picked up.
 
 ## 2. Functional: NuGet restore with only the kit's network rule
 

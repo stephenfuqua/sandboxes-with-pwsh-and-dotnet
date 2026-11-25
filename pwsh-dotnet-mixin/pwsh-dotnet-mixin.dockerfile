@@ -51,10 +51,26 @@ RUN set -eu; \
     tar -xzf /tmp/dotnet-sdk.tar.gz -C /out/opt/dotnet; \
     ln -s /opt/dotnet/dotnet /out/usr/local/bin/dotnet
 
-# Final stage: files only. The workload must supply the native libraries
-# (ICU, OpenSSL, libstdc++, zlib, Kerberos), which the sandbox templates do.
+# ICU stage. The sandbox templates (Debian 13 / Docker Hardened Images) ship OpenSSL, libstdc++,
+# zlib and Kerberos but not ICU, without which pwsh and dotnet fail at startup. Take ICU from
+# the matching Debian release so it links against the workload's glibc and libstdc++. apt
+# verifies the package signature. Only the three libraries .NET loads are kept.
+FROM debian:trixie-slim AS icu
+RUN set -eu; \
+    apt-get update; \
+    cd /tmp; \
+    apt-get download libicu76; \
+    dpkg-deb -x libicu76_*.deb /tmp/icu; \
+    libdir="$(ls -d /tmp/icu/usr/lib/*-linux-gnu)"; \
+    dest="/out/usr/lib/$(basename "${libdir}")"; \
+    mkdir -p "${dest}"; \
+    for lib in libicuuc libicui18n libicudata; do cp -a "${libdir}/${lib}.so."* "${dest}/"; done
+
+# Final stage: files only. The workload must supply the remaining native libraries
+# (OpenSSL, libstdc++, zlib, Kerberos), which the sandbox templates do.
 FROM scratch
 COPY --from=build /out/ /
+COPY --from=icu /out/ /
 
 # A mixin's image ENV merges into the workload. Opt out of .NET CLI telemetry and the
 # first-run banner; PowerShell telemetry is likewise disabled.
