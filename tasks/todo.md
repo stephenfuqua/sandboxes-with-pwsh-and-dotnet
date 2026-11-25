@@ -25,8 +25,8 @@
   - Verify: User reports pass/fail; fixes iterated until all pass.
   - Files: none (optionally a section in README)
 
-- [ ] Task 6: Rewrite the README
-  - Acceptance: Documents the mixin, requirements (v3 workload, minimum `sbx` version), local and published usage, NuGet note, version args, licensing, the retained warning; no stale references to removed images; documents the accepted workload warning and the telemetry opt-out (see SPEC.md Known Limitations).
+- [x] Task 6: Rewrite the README
+  - Acceptance: Documents the mixin, requirements (v3 workload, minimum `sbx` version), local and published usage, NuGet note, version args, licensing; no stale references to removed images; documents the accepted workload warning and the telemetry opt-out (see SPEC.md Known Limitations).
   - Verify: Markdown lint passes if configured; every command in the README was run or is copied from verified steps.
   - Files: `README.md`
 

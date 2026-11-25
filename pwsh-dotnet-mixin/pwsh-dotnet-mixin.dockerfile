@@ -54,7 +54,8 @@ RUN set -eu; \
 # ICU stage. The sandbox templates (Debian 13 / Docker Hardened Images) ship OpenSSL, libstdc++,
 # zlib and Kerberos but not ICU, without which pwsh and dotnet fail at startup. Take ICU from
 # the matching Debian release so it links against the workload's glibc and libstdc++. apt
-# verifies the package signature. Only the three libraries .NET loads are kept.
+# verifies the package signature. Only the three libraries .NET loads are kept, plus the
+# package's copyright file, which ICU's license requires to accompany copies.
 FROM debian:trixie-slim AS icu
 RUN set -eu; \
     apt-get update; \
@@ -64,7 +65,9 @@ RUN set -eu; \
     libdir="$(ls -d /tmp/icu/usr/lib/*-linux-gnu)"; \
     dest="/out/usr/lib/$(basename "${libdir}")"; \
     mkdir -p "${dest}"; \
-    for lib in libicuuc libicui18n libicudata; do cp -a "${libdir}/${lib}.so."* "${dest}/"; done
+    for lib in libicuuc libicui18n libicudata; do cp -a "${libdir}/${lib}.so."* "${dest}/"; done; \
+    mkdir -p /out/usr/share/doc/libicu76; \
+    cp /tmp/icu/usr/share/doc/libicu76/copyright /out/usr/share/doc/libicu76/
 
 # Final stage: files only. The workload must supply the remaining native libraries
 # (OpenSSL, libstdc++, zlib, Kerberos), which the sandbox templates do.

@@ -176,7 +176,7 @@ installed** in the agent sandbox, so verification is split in two.
 5. The two legacy dockerfiles and their digest pins are removed; the README
    documents the mixin, requirements (v3 workload), the NuGet note, and
    licensing (MIT Microsoft software; tarball sources).
-6. The README warning about giving agents build tools remains.
+6. ~~The README warning about giving agents build tools remains.~~ Dropped: the warning was removed deliberately.
 
 ## Open Questions
 

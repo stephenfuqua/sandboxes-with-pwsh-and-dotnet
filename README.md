@@ -79,8 +79,8 @@ Build the descriptor, not the Dockerfile, so the image carries the kit metadata:
 
 ```bash
 docker login
-docker buildx build ./pwsh-dotnet-mixin -f ./pwsh-dotnet-mixin/pwsh-dotnet-mixin.yaml `
-  -t docker.io/stephenfuqua/pwsh-dotnet-mixin:1.0.0 --push
+docker buildx build ./pwsh-dotnet-mixin -f ./pwsh-dotnet-mixin/pwsh-dotnet-mixin.yaml \
+  -t docker.io/<NAMESPACE>/pwsh-dotnet-mixin:<VERSION> --push
 ```
 
 Then pass the reference to `--kit` in place of the local path:
