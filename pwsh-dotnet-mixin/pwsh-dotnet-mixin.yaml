@@ -1,0 +1,35 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: mixin
+displayName: PowerShell and .NET SDK
+description: PowerShell and the .NET SDK from Microsoft's official release tarballs, as a self-contained overlay
+licenses: [MIT]
+dockerfile: pwsh-dotnet-mixin.dockerfile
+
+args:
+  pwshVersion:
+    default: "7.6.5"
+    pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+    buildArg: PWSH_VERSION
+  # Release channel; the build resolves it to the latest SDK in that channel.
+  dotnetChannel:
+    default: "10.0"
+    pattern: '^[0-9]+\.[0-9]+$'
+    buildArg: DOTNET_CHANNEL
+  # Optional exact SDK version from the channel (e.g. 10.0.100); empty means the newest SDK.
+  dotnetSdkVersion:
+    default: ""
+    pattern: '^([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?)?$'
+    buildArg: DOTNET_SDK_VERSION
+
+provides:
+  - "pwsh@${{ kit.args.pwshVersion }}"
+  - "dotnet@${{ kit.args.dotnetChannel }}"
+
+capabilities:
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          # NuGet package restore. Downloads at build time use the builder's network and need no rule.
+          - api.nuget.org:443
