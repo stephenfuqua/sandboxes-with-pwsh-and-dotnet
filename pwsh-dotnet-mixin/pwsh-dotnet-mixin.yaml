@@ -16,6 +16,11 @@ args:
     default: "10.0"
     pattern: '^[0-9]+\.[0-9]+$'
     buildArg: DOTNET_CHANNEL
+  # Optional exact SDK version from the channel (e.g. 10.0.100); empty means the newest SDK.
+  dotnetSdkVersion:
+    default: ""
+    pattern: '^([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?)?$'
+    buildArg: DOTNET_SDK_VERSION
 
 provides:
   - "pwsh@${{ kit.args.pwshVersion }}"

@@ -2,15 +2,17 @@
 
 # Build stage: download and verify PowerShell and the .NET SDK. Nothing from this stage
 # reaches the sandbox except the files copied into /out.
-FROM ubuntu:26.04 AS build
+FROM ubuntu:26.04@sha256:d66b366dac61b575bee2aef07e9c26e8070096fbe84a3d4d3eb0da069b5d76db AS build
 
 ARG TARGETARCH
 ARG PWSH_VERSION=7.6.5
 # Release channel, e.g. "10.0": resolves to the latest SDK in that channel at build time.
 ARG DOTNET_CHANNEL=10.0
+# Optional exact SDK version, e.g. "10.0.100". Empty means the newest SDK in the channel.
+ARG DOTNET_SDK_VERSION=
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates curl jq libc-bin && \
+    apt-get install -y --no-install-recommends ca-certificates curl jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Microsoft's naming for the CPU architectures that Docker calls amd64 and arm64.
@@ -40,10 +42,12 @@ RUN set -eu; \
     arch="$(cat /arch)"; \
     curl -fsSL -o /tmp/releases.json \
       "https://builds.dotnet.microsoft.com/dotnet/release-metadata/${DOTNET_CHANNEL}/releases.json"; \
-    jq -r --arg rid "linux-${arch}" \
-      '.releases[0].sdk.files[] | select(.rid == $rid and (.name | endswith(".tar.gz"))) | "\(.hash) \(.url)"' \
+    jq -r --arg rid "linux-${arch}" --arg ver "${DOTNET_SDK_VERSION}" \
+      '(if $ver == "" then [.releases[0].sdk] else [.releases[].sdks[]? | select(.version == $ver)] end) \
+       | .[].files[] | select(.rid == $rid and (.name | endswith(".tar.gz"))) | "\(.hash) \(.url)"' \
       /tmp/releases.json > /tmp/sdk.txt; \
-    test "$(wc -l < /tmp/sdk.txt)" -eq 1; \
+    [ "$(wc -l < /tmp/sdk.txt)" -eq 1 ] || { \
+      echo "Expected exactly one linux-${arch} .tar.gz for SDK '${DOTNET_SDK_VERSION:-latest}' in channel ${DOTNET_CHANNEL}, found $(wc -l < /tmp/sdk.txt)" >&2; exit 1; }; \
     read -r hash url < /tmp/sdk.txt; \
     curl -fsSL -o /tmp/dotnet-sdk.tar.gz "${url}"; \
     echo "${hash}  /tmp/dotnet-sdk.tar.gz" | sha512sum -c -; \
@@ -56,7 +60,7 @@ RUN set -eu; \
 # the matching Debian release so it links against the workload's glibc and libstdc++. apt
 # verifies the package signature. Only the three libraries .NET loads are kept, plus the
 # package's copyright file, which ICU's license requires to accompany copies.
-FROM debian:trixie-slim AS icu
+FROM debian:trixie-slim@sha256:8aa5a7bf5a1955bddbe7d74fcdd0b91ab30e74362a8b73af672b0481b35b44a0 AS icu
 RUN set -eu; \
     apt-get update; \
     cd /tmp; \
@@ -75,8 +79,11 @@ FROM scratch
 COPY --from=build /out/ /
 COPY --from=icu /out/ /
 
-# A mixin's image ENV merges into the workload. Opt out of .NET CLI telemetry and the
+# A mixin's image ENV merges into the workload. DOTNET_ROOT points the .NET host at /opt/dotnet,
+# which it does not search by default; without it apphost executables and global tools fail with
+# "You must install .NET to run this application". Also opt out of .NET CLI telemetry and the
 # first-run banner; PowerShell telemetry is likewise disabled.
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+ENV DOTNET_ROOT=/opt/dotnet \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1 \
     POWERSHELL_TELEMETRY_OPTOUT=1

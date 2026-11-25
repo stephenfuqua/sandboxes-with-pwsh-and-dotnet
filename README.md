@@ -20,6 +20,8 @@ The mixin also:
 
 - Allows outbound HTTPS to `api.nuget.org` so `dotnet restore` works without extra policy.
 - Sets `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_NOLOGO=1` and `POWERSHELL_TELEMETRY_OPTOUT=1`.
+- Sets `DOTNET_ROOT=/opt/dotnet` so apphost executables and `dotnet tool install -g` tools can find
+  the SDK.
 
 ## Requirements
 
@@ -27,7 +29,7 @@ The mixin also:
 - A v3 workload. The built-in names (`shell`, `claude`, `copilot`, ...) select v3 kits. Every kit in a
   sandbox must be v3.
 - Docker with Buildx, or another OCI-compatible builder, to build the mixin from source.
-- amd64 or arm64.
+- amd64. arm64 builds are supported but untested.
 
 The workload must supply OpenSSL, libstdc++, zlib and Kerberos. The Docker sandbox templates (Debian 13,
 Docker Hardened Images) do. They lack ICU, which is why the mixin bundles it.
@@ -54,7 +56,9 @@ create a sandbox with a new name.
 > ```bash
 > pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
 > dotnet --version
-> cd /tmp && dotnet new console -o hello && dotnet package add Serilog && dotnet run --project hello
+> cd /tmp && dotnet new console -o hello && dotnet package add Serilog --project hello
+> dotnet run --project hello
+> dotnet build hello && ./hello/bin/Debug/net10.0/hello
 > ```
 
 ### Versions
@@ -63,6 +67,7 @@ create a sandbox with a new name.
 | --- | --- | --- | --- |
 | `pwshVersion` | `7.6.5` | `major.minor.patch` | `PWSH_VERSION` |
 | `dotnetChannel` | `10.0` | `major.minor` | `DOTNET_CHANNEL` |
+| `dotnetSdkVersion` | empty | Exact SDK version such as `10.0.100`, or empty | `DOTNET_SDK_VERSION` |
 
 Set them with `--kit-arg`:
 
@@ -70,8 +75,13 @@ Set them with `--kit-arg`:
 sbx run claude --name pwsh-dotnet-9 --kit ./pwsh-dotnet-mixin --kit-arg dotnetChannel=9.0
 ```
 
-`dotnetChannel` resolves to the newest SDK in that channel at build time, so builds are not
-reproducible across SDK releases.
+By default (`dotnetSdkVersion` empty), the build installs the newest SDK in `dotnetChannel`, so
+the result changes as new SDKs are released. To pin the SDK for a reproducible build, set
+`dotnetSdkVersion` to an exact version from that channel:
+
+```bash
+sbx run claude --name pwsh-dotnet-pinned --kit ./pwsh-dotnet-mixin --kit-arg dotnetSdkVersion=10.0.100
+```
 
 ### Published image
 

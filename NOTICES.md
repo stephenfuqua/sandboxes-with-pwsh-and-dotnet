@@ -14,9 +14,9 @@ limitations under the License.
   from Microsoft's official release tarballs. Their license and third-party
   notices ship in the image under `/opt/pwsh` and `/opt/dotnet` (`LICENSE.txt`,
   `ThirdPartyNotices.txt`).
-- ICU comes from Debian's `libicu76` package, whose copyright file lists ICU
-  under an MIT-style license. The mixin copies the three shared libraries and
-  that copyright file, which ships in the image at
+- ICU comes from Debian's `libicu76` package, whose copyright file declares ICU
+  (Copyright Unicode, Inc.) under the MIT license. The mixin copies the three
+  shared libraries and that copyright file, which ships in the image at
   `/usr/share/doc/libicu76/copyright`.
 - The sandbox workloads are governed by the terms of `docker/sandbox-templates`,
   which are not explicitly stated anywhere.
