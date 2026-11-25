@@ -41,11 +41,13 @@ dotnet --version
 dotnet new console -o /tmp/hello && dotnet run --project /tmp/hello   # needs NuGet access
 
 # Build and publish
-docker buildx build -f pwsh-dotnet-mixin/pwsh-dotnet-mixin.dockerfile \
-  -t <dockerhub-user>/pwsh-dotnet-mixin:<version> --push pwsh-dotnet-mixin
+# Build the descriptor, not the Dockerfile, so the image carries the kit metadata
+docker login
+docker buildx build ./pwsh-dotnet-mixin -f ./pwsh-dotnet-mixin/pwsh-dotnet-mixin.yaml \
+  -t docker.io/<NAMESPACE>/pwsh-dotnet-mixin:<VERSION> --push
 
 # Consume published
-sbx run claude --kit <dockerhub-user>/pwsh-dotnet-mixin:<version>
+sbx run claude --name pwsh-dotnet --kit <NAMESPACE>/pwsh-dotnet-mixin:<VERSION>
 ```
 
 ## Project Structure
@@ -130,8 +132,9 @@ installed** in the agent sandbox, so verification is split in two.
 - Smoke: `pwsh` and `dotnet` run on the `shell` workload (amd64; arm64 if
   hardware is available).
 - Compatibility: same smoke on the `claude` and `copilot` workloads, which
-  are Ubuntu 26.04 based. This confirms the workload provides the native
-  libraries (ICU, OpenSSL, zlib, etc.) the tarballs need.
+  are Debian 13 (Docker Hardened Images) based. This confirms the workload
+  provides the native libraries (OpenSSL, libstdc++, zlib, Kerberos) the
+  tarballs need and that the bundled ICU is picked up.
 - Functional: `dotnet new console` + `dotnet run` succeeds with NuGet access
   allowed by the descriptor and no extra user policy.
 - Negative: with the kit's network rule absent, restore fails (confirms the
@@ -160,8 +163,10 @@ installed** in the agent sandbox, so verification is split in two.
   `mkdir -m 0777 /out/opt/dotnet/metadata` in the build stage.
 - Telemetry is opted out via image `ENV` (`DOTNET_CLI_TELEMETRY_OPTOUT`,
   `DOTNET_NOLOGO`, `POWERSHELL_TELEMETRY_OPTOUT`).
-- Requires a workload that provides ICU, OpenSSL, libstdc++, zlib and Kerberos
-  libraries (the `claude-code` and `copilot` templates do).
+- Requires a workload that provides OpenSSL, libstdc++, zlib and Kerberos
+  libraries (the sandbox templates do). ICU is not in the templates, so the
+  mixin bundles `libicuuc`, `libicui18n` and `libicudata` from Debian 13's
+  `libicu76`, with its copyright file.
 - Each build pulls the latest SDK of the channel, so builds are not
   reproducible across SDK releases.
 
@@ -180,16 +185,20 @@ installed** in the agent sandbox, so verification is split in two.
 
 ## Open Questions
 
-1. **Is `sbx` available in this sandbox?** If not, verification must happen on
-   your host and I would hand over exact commands. (Likely, since we are
-   inside a sandbox.)
-2. **Runtime libraries on 26.04 workloads**: unverified. The spike in task 1
-   answers this. If libraries are missing, options are bundling them into the
-   mixin or declaring a different workload requirement.
-3. **Exact network hosts** for `dotnet restore` (`api.nuget.org` alone vs.
-   also `*.nuget.org` / `globalcdn.nuget.org`): determine empirically.
+All resolved.
+
+1. ~~Is `sbx` available in this sandbox?~~ No. Verification under `sbx` ran on
+   the host from `tasks/host-verification.md`.
+2. ~~Runtime libraries on 26.04 workloads~~: the workloads are Debian 13, not
+   Ubuntu 26.04, and lack only ICU, which the mixin now bundles.
+3. ~~Exact network hosts for `dotnet restore`~~: `api.nuget.org:443` alone is
+   enough for restore and `dotnet package add` from nuget.org.
 4. ~~Exact `provides` and `args` syntax~~: resolved from the upstream v3 spec.
-5. **Docker Hub namespace and image name** for publishing.
-6. **Tarball sources**: PowerShell from GitHub releases vs. `aka.ms`; .NET via
-   `dotnet-install.sh` vs. direct download. Both need checksums.
-7. **Does `sbx` need to be on a minimum version** for kit support? Document it.
+5. ~~Docker Hub namespace and image name~~: published to Docker Hub as
+   `<NAMESPACE>/pwsh-dotnet-mixin` and tested by running the kit from the
+   published image.
+6. ~~Tarball sources~~: PowerShell from GitHub releases (SHA-256 from the
+   release's `hashes.sha256`); .NET by direct download from Microsoft's release
+   metadata (SHA-512), not `dotnet-install.sh`.
+7. ~~Minimum `sbx` version~~: v0.45 (first release with v3 kits), documented
+   in the README.

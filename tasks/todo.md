@@ -35,7 +35,7 @@
   - Verify: `git grep -n 'with-pwsh-and-dotnet.dockerfile'` returns nothing.
   - Files: `claude-with-pwsh-and-dotnet.dockerfile`, `copilot-with-pwsh-and-dotnet.dockerfile`
 
-- [ ] Task 8: Publish (ask first)
+- [x] Task 8: Publish (ask first)
   - Acceptance: User supplies Docker Hub namespace; user confirms the push; image consumable via `--kit <ref>`.
   - Verify: Host `sbx run claude --kit <ref>` and `pwsh`, `dotnet` work.
   - Files: none
