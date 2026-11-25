@@ -30,7 +30,7 @@
   - Verify: Markdown lint passes if configured; every command in the README was run or is copied from verified steps.
   - Files: `README.md`
 
-- [ ] Task 7: Remove legacy dockerfiles (after Task 5 passes and the user confirms)
+- [x] Task 7: Remove legacy dockerfiles (after Task 5 passes and the user confirms)
   - Acceptance: Both legacy dockerfiles deleted; the README no longer references them.
   - Verify: `git grep -n 'with-pwsh-and-dotnet.dockerfile'` returns nothing.
   - Files: `claude-with-pwsh-and-dotnet.dockerfile`, `copilot-with-pwsh-and-dotnet.dockerfile`

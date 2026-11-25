@@ -55,11 +55,11 @@ pwsh-dotnet-mixin/
   pwsh-dotnet-mixin.dockerfile  → build stage (download tarballs) + scratch final stage
   pwsh-dotnet-mixin.yaml        → descriptor: args, provides, capabilities
 README.md                       → usage, publishing, requirements, licensing
+NOTICES.md                      → third-party license notices
 SPEC.md                         → this file
 ```
 
-Removed after verification: `claude-with-pwsh-and-dotnet.dockerfile`,
-`copilot-with-pwsh-and-dotnet.dockerfile`.
+The two legacy per-agent dockerfiles (Claude and Copilot) were removed after verification.
 
 ## Code Style
 
