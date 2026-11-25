@@ -1,7 +1,7 @@
 # sandboxes-with-pwsh-and-dotnet
 
-A [Docker Sandbox](https://docs.docker.com/ai/sandboxes) mixin (a "kit") that adds PowerShell and the
-.NET SDK to any v3 sandbox workload: `shell`, `claude`, `copilot`, and so on. The mixin lives in
+A [Docker Sandbox](https://docs.docker.com/ai/sandboxes) mixin (a "kit") that adds PowerShell and the .NET SDK
+to any v3 sandbox workload: `shell`, `claude`, `copilot`, and so on. The mixin lives in
 [`pwsh-dotnet-mixin/`](pwsh-dotnet-mixin/).
 
 ## What's included
@@ -12,22 +12,20 @@ A [Docker Sandbox](https://docs.docker.com/ai/sandboxes) mixin (a "kit") that ad
 | .NET SDK | latest in channel `10.0` | Official tarball from Microsoft's release metadata, SHA-512 verified |
 | ICU (`libicuuc`, `libicui18n`, `libicudata`) | Debian 13 `libicu76` | Debian package, signature verified by apt |
 
-PowerShell installs to `/opt/pwsh` and the SDK to `/opt/dotnet`. Both are symlinked into
-`/usr/local/bin`. The final image stage is `FROM scratch`, so the mixin adds only these files to the
-workload.
+PowerShell installs to `/opt/pwsh` and the SDK to `/opt/dotnet`. Both are symlinked into `/usr/local/bin`. The
+final image stage is `FROM scratch`, so the mixin adds only these files to the workload.
 
 The mixin also:
 
 - Allows outbound HTTPS to `api.nuget.org` so `dotnet restore` works without extra policy.
 - Sets `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_NOLOGO=1` and `POWERSHELL_TELEMETRY_OPTOUT=1`.
-- Sets `DOTNET_ROOT=/opt/dotnet` so apphost executables and `dotnet tool install -g` tools can find
-  the SDK.
+- Sets `DOTNET_ROOT=/opt/dotnet` so apphost executables and `dotnet tool install -g` tools can find the SDK.
 
 ## Requirements
 
 - `sbx` v0.45 or later (the first release with v3 kits).
-- A v3 workload. The built-in names (`shell`, `claude`, `copilot`, ...) select v3 kits. Every kit in a
-  sandbox must be v3.
+- A v3 workload. The built-in names (`shell`, `claude`, `copilot`, ...) select v3 kits. Every kit in a sandbox
+  must be v3.
 - Docker with Buildx, or another OCI-compatible builder, to build the mixin from source.
 - amd64. arm64 builds are supported but untested.
 
@@ -46,12 +44,11 @@ sbx run claude --name pwsh-dotnet --kit ./pwsh-dotnet-mixin
 
 `sbx` builds the mixin and layers it onto the workload.
 
-A sandbox keeps the kits it was created with. After editing the mixin, or to try different arguments,
-create a sandbox with a new name.
+A sandbox keeps the kits it was created with. After editing the mixin, or to try different arguments, create a
+sandbox with a new name.
 
-> [!TIP]
-> Optional: verify that PowerShell and Dotnet are installed correctly by
-> running these commands inside the sandbox:
+> [!TIP] Optional: verify that PowerShell and Dotnet are installed correctly by running these commands inside
+> the sandbox:
 >
 > ```bash
 > pwsh -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
@@ -75,9 +72,9 @@ Set them with `--kit-arg`:
 sbx run claude --name pwsh-dotnet-9 --kit ./pwsh-dotnet-mixin --kit-arg dotnetChannel=9.0
 ```
 
-By default (`dotnetSdkVersion` empty), the build installs the newest SDK in `dotnetChannel`, so
-the result changes as new SDKs are released. To pin the SDK for a reproducible build, set
-`dotnetSdkVersion` to an exact version from that channel:
+By default (`dotnetSdkVersion` empty), the build installs the newest SDK in `dotnetChannel`, so the result
+changes as new SDKs are released. To pin the SDK for a reproducible build, set `dotnetSdkVersion` to an exact
+version from that channel:
 
 ```bash
 sbx run claude --name pwsh-dotnet-pinned --kit ./pwsh-dotnet-mixin --kit-arg dotnetSdkVersion=10.0.100
@@ -99,20 +96,20 @@ Then pass the reference to `--kit` in place of the local path:
 sbx run claude --name pwsh-dotnet --kit <NAMESPACE>/pwsh-dotnet-mixin:<VERSION>
 ```
 
-Docker Hub repositories are public by default. Set the repository to private if that is not what you
-want; `sbx` then needs registry credentials to pull it.
+Docker Hub repositories are public by default. Set the repository to private if that is not what you want;
+`sbx` then needs registry credentials to pull it.
 
 ## NuGet access
 
-The mixin's network policy allows `api.nuget.org:443`, which is enough to restore packages from
-nuget.org. Feeds on other hosts (a private feed, GitHub Packages, Azure Artifacts) need their own
-allow rules in your sandbox policy.
+The mixin's network policy allows `api.nuget.org:443`, which is enough to restore packages from nuget.org.
+Feeds on other hosts (a private feed, GitHub Packages, Azure Artifacts) need their own allow rules in your
+sandbox policy.
 
 ## Known limitations
 
-- **Workload warning on first use.** The first `dotnet` command in a fresh home directory prints
-  `An issue was encountered verifying workloads.` `/opt/dotnet` is root-owned and read-only for the
-  `agent` user, so the SDK cannot create `/opt/dotnet/metadata`. Restore, build and run are unaffected.
+- **Workload warning on first use.** The first `dotnet` command in a fresh home directory prints `An issue was
+  encountered verifying workloads.` `/opt/dotnet` is root-owned and read-only for the `agent` user, so the SDK
+  cannot create `/opt/dotnet/metadata`. Restore, build and run are unaffected.
 - **No `dotnet workload install`**, for the same reason.
 
 ## Licensing
@@ -121,10 +118,8 @@ Copyright (c) 2026, Stephen A. Fuqua.
 
 Licensed under the [Apache License, Version 2.0](LICENSE) (the "License").
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See
+the License for the specific language governing permissions and limitations under the License.
 
 See [NOTICES.md](./NOTICES.md) for other license notices.
